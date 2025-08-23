@@ -132,6 +132,15 @@
     <button onclick="logout()">ログアウト</button>
   </div>
 
+  <button onclick="openPasswordChange()">パスワード変更</button>
+
+<div id="passwordChangeBox" class="admin-controls hidden">
+  <input type="text" id="changeUser" placeholder="ユーザー名" />
+  <input type="password" id="newPass" placeholder="新しいパスワード" />
+  <button onclick="changePassword()">変更する</button>
+</div>
+
+
   <script>
     let users = JSON.parse(localStorage.getItem("users")) || {};
     let currentUser = null;
@@ -246,6 +255,33 @@
       el.textContent = newVal;
       setTimeout(() => el.classList.remove("flash"), 500);
     }
+
+    function openPasswordChange() {
+  document.getElementById("passwordChangeBox").classList.remove("hidden");
+}
+
+function changePassword() {
+  const name = document.getElementById("changeUser").value;
+  const newP = document.getElementById("newPass").value;
+
+  if (!users[name]) {
+    alert("ユーザーが存在しません");
+    return;
+  }
+
+  if (!newP) {
+    alert("新しいパスワードを入力してください");
+    return;
+  }
+
+  users[name].password = newP;
+  localStorage.setItem("users", JSON.stringify(users));
+  alert("パスワードを変更しました");
+  document.getElementById("passwordChangeBox").classList.add("hidden");
+  document.getElementById("changeUser").value = "";
+  document.getElementById("newPass").value = "";
+}
+
   </script>
 </body>
 </html>
