@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>I BANK</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #121212;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .box {
+      background: #1e1e1e;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.8rem;
+      margin: 0.5rem 0;
+      border: none;
+      border-radius: 8px;
+      background: #2a2a2a;
+      color: #fff;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.8rem;
+      background: #4f46e5;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+
+    button:hover {
+      background: #6366f1;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    h1 {
+      color: #4f46e5;
+      text-shadow: 0 0 10px rgba(79, 70, 229, 0.6);
+    }
+
+    .admin-controls, #adminLoginBox {
+      margin-top: 1rem;
+      background: #2a2a2a;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+
+    #balance {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #22c55e;
+      text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+      transition: transform 0.3s ease;
+    }
+
+    .flash {
+      animation: flash 0.5s ease;
+    }
+
+    @keyframes flash {
+      0% { transform: scale(1); color: #fff; }
+      50% { transform: scale(1.2); color: #22c55e; }
+      100% { transform: scale(1); color: #22c55e; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="box hidden" id="registerBox">
+    <h1>I BANK</h1>
+    <h2>新規登録</h2>
+    <input type="text" id="regName" placeholder="名前" />
+    <input type="password" id="regPass" placeholder="パスワード" />
+    <button onclick="register()">登録</button>
+  </div>
+
+  <div class="box" id="loginBox">
+    <h2>ログイン</h2>
+    <input type="text" id="loginName" placeholder="名前" />
+    <input type="password" id="loginPass" placeholder="パスワード" />
+    <button onclick="login()">ログイン</button>
+  </div>
+
+  <div class="box hidden" id="mainBox">
+    <h2 id="welcome"></h2>
+    <p class="balance-label">残高：</p>
+    <p><span id="balance">0</span> 円</p>
+
+    <button onclick="toggleAdminMode()">管理者モード</button>
+
+    <div id="adminLoginBox" class="hidden">
+      <input type="password" id="adminPassInput" placeholder="管理者パスワード" />
+      <button onclick="confirmAdmin()">管理者モードON</button>
+    </div>
+
+    <div id="adminControls" class="admin-controls hidden">
+      <input type="number" id="newBalance" placeholder="新しい残高" />
+      <button onclick="updateBalance()">残高を更新</button>
+    </div>
+
+    <button onclick="openPayment()">支払う</button>
+    <div id="paymentBox" class="hidden">
+      <input type="number" id="paymentAmount" placeholder="支払う金額" />
+      <button onclick="makePayment()">支払う</button>
+    </div>
+
+    <button onclick="logout()">ログアウト</button>
+  </div>
+
+  <script>
+    let users = JSON.parse(localStorage.getItem("users")) || {};
+    let currentUser = null;
+    let isAdminMode = false;
+
+    window.onload = () => {
+      const hasUsers = Object.keys(users).length > 0;
+      if (!hasUsers) {
+        document.getElementById("registerBox").classList.remove("hidden");
+      }
+    };
+
+    function register() {
+      const name = document.getElementById("regName").value;
+      const pass = document.getElementById("regPass").value;
+
+      if (!name || !pass) {
+        alert("名前とパスワードを入力してください");
+        return;
+      }
+
+      if (users[name]) {
+        alert("すでに登録されています");
+        return;
+      }
+
+      users[name] = { password: pass, balance: 0 };
+      localStorage.setItem("users", JSON.stringify(users));
+      alert("登録完了！ログインしてください");
+      document.getElementById("registerBox").classList.add("hidden");
+      document.getElementById("loginBox").scrollIntoView({ behavior: "smooth" });
+    }
+
+    function login() {
+      const name = document.getElementById("loginName").value;
+      const pass = document.getElementById("loginPass").value;
+
+      if (users[name] && users[name].password === pass) {
+        currentUser = name;
+        document.getElementById("loginBox").classList.add("hidden");
+        document.getElementById("mainBox").classList.remove("hidden");
+        document.getElementById("welcome").textContent = `ようこそ、${name}さん`;
+        animateBalance(users[name].balance);
+      } else {
+        alert("ログイン失敗");
+      }
+    }
+
+    function logout() {
+      currentUser = null;
+      isAdminMode = false;
+      document.getElementById("mainBox").classList.add("hidden");
+      document.getElementById("loginBox").classList.remove("hidden");
+      document.getElementById("adminControls").classList.add("hidden");
+      document.getElementById("adminLoginBox").classList.add("hidden");
+      document.getElementById("registerBox").classList.remove("hidden");
+    }
+
+    function toggleAdminMode() {
+      if (!isAdminMode) {
+        document.getElementById("adminLoginBox").classList.remove("hidden");
+      } else {
+        isAdminMode = false;
+        document.getElementById("adminControls").classList.add("hidden");
+        document.getElementById("adminLoginBox").classList.add("hidden");
+      }
+    }
+
+    function confirmAdmin() {
+      const input = document.getElementById("adminPassInput").value;
+      if (input === "icna2011") {
+        isAdminMode = true;
+        document.getElementById("adminControls").classList.remove("hidden");
+        document.getElementById("adminLoginBox").classList.add("hidden");
+        document.getElementById("adminPassInput").value = "";
+      } else {
+        alert("パスワードが違います");
+      }
+    }
+
+    function updateBalance() {
+      const newVal = parseInt(document.getElementById("newBalance").value);
+      if (!isNaN(newVal)) {
+        users[currentUser].balance = newVal;
+        localStorage.setItem("users", JSON.stringify(users));
+        animateBalance(newVal);
+        alert("残高を更新しました");
+      }
+    }
+
+    function openPayment() {
+      document.getElementById("paymentBox").classList.remove("hidden");
+    }
+
+        function makePayment() {
+      const amount = parseInt(document.getElementById("paymentAmount").value);
+      if (!isNaN(amount) && amount > 0 && users[currentUser].balance >= amount) {
+        users[currentUser].balance -= amount;
+        localStorage.setItem("users", JSON.stringify(users));
+        animateBalance(users[currentUser].balance);
+        alert(`¥${amount} 支払いました`);
+        document.getElementById("paymentBox").classList.add("hidden");
+        document.getElementById("paymentAmount").value = "";
+      } else {
+        alert("金額が不正か、残高不足です");
+      }
+    }
+
+    function animateBalance(newVal) {
+      const el = document.getElementById("balance");
+      el.classList.add("flash");
+      el.textContent = newVal;
+      setTimeout(() => el.classList.remove("flash"), 500);
+    }
+  </script>
+</body>
+</html>
