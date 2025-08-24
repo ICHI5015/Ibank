@@ -198,6 +198,16 @@
       }
     };
 
+    function getScratchResult() {
+  const rand = Math.random();
+  if (rand < 0.01) return { grade: "特等", amount: 2000, emoji: "🎊" };
+  if (rand < 0.06) return { grade: "1等", amount: 500, emoji: "🥇" };
+  if (rand < 0.21) return { grade: "2等", amount: 100, emoji: "🥈" };
+  if (rand < 0.51) return { grade: "3等", amount: 10, emoji: "🥉" };
+  return { grade: "ハズレ", amount: 0, emoji: "😢" };
+}
+
+
     function register() {
       const name = document.getElementById("regName").value;
       const pass = document.getElementById("regPass").value;
@@ -275,6 +285,10 @@
         alert("残高を更新しました");
       }
     }
+
+    const result = getScratchResult();
+document.querySelector(".reward").innerText = `${result.emoji} ${result.grade}！ ${result.amount}円ゲット！ ${result.amount > 0 ? "🎉" : ""}`;
+
 
     function openPayment() {
       document.getElementById("paymentBox").classList.remove("hidden");
