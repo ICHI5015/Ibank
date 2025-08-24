@@ -29,7 +29,7 @@
     }
 
     input, select {
-      width: 100%;
+      width: 95%;
       padding: 0.8rem;
       margin: 0.5rem 0;
       border: none;
@@ -87,6 +87,41 @@
       50% { transform: scale(1.2); color: #22c55e; }
       100% { transform: scale(1); color: #22c55e; }
     }
+
+    .logo {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: 0.2rem;
+  color: #4f46e5;
+  text-shadow: 0 0 10px rgba(79, 70, 229, 0.6);
+  margin-bottom: 1rem;
+}
+
+    .barcode {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem 0;
+  height: 40px;
+  background: #fff;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.barcode::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-image: repeating-linear-gradient(
+    to right,
+    #000 0px,
+    #000 2px,
+    transparent 2px,
+    transparent 4px
+  );
+}
+
   </style>
 </head>
 <body>
@@ -107,9 +142,13 @@
   </div>
 
   <div class="box hidden" id="mainBox">
+    <div id="logo" class="logo">I BANK</div>
+
     <h2 id="welcome"></h2>
     <p class="balance-label">残高：</p>
     <p><span id="balance">0</span> 円</p>
+    <div class="barcode"></div>
+
 
     <button onclick="toggleAdminMode()">管理者モード</button>
 
